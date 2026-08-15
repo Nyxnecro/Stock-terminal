@@ -82,20 +82,24 @@ async function loadStock(ticker) {
     trendEl.textContent = trendSymbol;
     trendEl.className = `stat-value ${trendClass}`;
 
-    // Update company info panel
+// Update company info panel
     const infoBody = document.getElementById("infoBody");
-    infoBody.innerHTML = `
-      <div class="info-row"><span class="label">Company</span><span>${info.name || "-"}</span></div>
-      <div class="info-row"><span class="label">Sector</span><span>${info.sector || "-"}</span></div>
-      <div class="info-row"><span class="label">Industry</span><span>${info.industry || "-"}</span></div>
-      <div class="info-row"><span class="label">Market Cap</span><span>₹${formatLargeNumber(info.market_cap)}</span></div>
-      <div class="info-row"><span class="label">P/E Ratio</span><span>${info.pe_ratio ? info.pe_ratio.toFixed(2) : "-"}</span></div>
-      <div class="info-row"><span class="label">EPS</span><span>${info.eps ?? "-"}</span></div>
-      <div class="info-row"><span class="label">52W High</span><span>₹${info["52_week_high"] ?? "-"}</span></div>
-      <div class="info-row"><span class="label">52W Low</span><span>₹${info["52_week_low"] ?? "-"}</span></div>
-      <div class="info-row"><span class="label">Dividend Yield</span><span>${info.dividend_yield ?? "-"}%</span></div>
-    `;
-
+    if (info.error) {
+      infoBody.innerHTML = `<div class="log-line muted">${info.error}</div>`;
+    } else 
+      {
+      infoBody.innerHTML = `
+        <div class="info-row"><span class="label">Company</span><span>${info.name || "-"}</span></div>
+        <div class="info-row"><span class="label">Sector</span><span>${info.sector || "-"}</span></div>
+        <div class="info-row"><span class="label">Industry</span><span>${info.industry || "-"}</span></div>
+        <div class="info-row"><span class="label">Market Cap</span><span>₹${formatLargeNumber(info.market_cap)}</span></div>
+        <div class="info-row"><span class="label">P/E Ratio</span><span>${info.pe_ratio ? info.pe_ratio.toFixed(2) : "-"}</span></div>
+        <div class="info-row"><span class="label">EPS</span><span>${info.eps ?? "-"}</span></div>
+        <div class="info-row"><span class="label">52W High</span><span>₹${info["52_week_high"] ?? "-"}</span></div>
+        <div class="info-row"><span class="label">52W Low</span><span>₹${info["52_week_low"] ?? "-"}</span></div>
+        <div class="info-row"><span class="label">Dividend Yield</span><span>${info.dividend_yield ?? "-"}%</span></div>
+      `;
+    }
     // Update news panel
     const newsBody = document.getElementById("newsBody");
     if (news.length) {

@@ -57,8 +57,9 @@ def get_company_info(ticker: str):
         cache_analysis(cache_key, result)
         return result
     except Exception:
-        return {"error": "Data temporarily unavailable (rate limited). Please try again shortly."}
-
+        error_result = {"error": "Data temporarily unavailable (rate limited). Please try again shortly."}
+        cache_analysis(cache_key, error_result)  # cache the failure briefly too
+        return error_result
 
 def get_stock_news(ticker: str, limit: int = 5):
     cache_key = f"news_{ticker}"
