@@ -56,4 +56,34 @@ def stock_news(ticker: str):
 
 @app.get("/search/{query}")
 def search(query: str):
-    return search_ticker(query))
+    return search_ticker(query)
+@app.get("/stock/{ticker}")
+def stock_data(ticker: str):
+    try:
+        df = get_stock_data(ticker)
+        return df.reset_index().to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+@app.get("/stock/{ticker}/features")
+def stock_features(ticker: str):
+    try:
+        df = get_stock_data(ticker, period="6mo")
+        df = add_features(df)
+        df = df.dropna()
+        return df.reset_index().to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+@app.get("/stock/{ticker}/predict")
+def stock_predict(ticker: str):
+    try:
+        df = get_stock_data(ticker, period="6mo")
+        df = add_features(df)
+        df = df.dropna()
+        if df.empty:
+            raise ValueError("Not enough data to generate a prediction right now")
+        result = train_baseline(df)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
