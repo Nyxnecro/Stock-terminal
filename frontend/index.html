@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stock Terminal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">STOCK<span class="cursor">_</span>TERMINAL</div>
+    <div class="nav-links">
+      <span>DASHBOARD</span>
+      <span>PREDICT</span>
+      <span>ABOUT</span>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1 class="fade-up">Verified market signals.<br>Computed in real time.</h1>
+    <p class="fade-up delay-1">Live price data, technical indicators, and ML-driven next-day predictions — all in one terminal.</p>
+
+    <div class="input-row fade-up delay-2">
+      <input id="ticker" type="text" placeholder="ENTER TICKER (e.g. AAPL)" />
+      <button id="fetchBtn">FETCH</button>
+    </div>
+  </section>
+
+  <section class="stats-bar fade-up delay-3">
+    <div class="stat">
+      <div class="stat-value" id="statLast">$0.00</div>
+      <div class="stat-label">Last Close</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statPred">$0.00</div>
+      <div class="stat-label">Predicted Next Close</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statMae">$0.00</div>
+      <div class="stat-label">Model Error (MAE)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statTrend">—</div>
+      <div class="stat-label">Trend</div>
+    </div>
+  </section>
+  <section class="panels fade-up delay-3">
+    <div class="panel">
+      <div class="panel-header">Company Overview</div>
+      <div id="infoBody" class="panel-body">
+        <div class="log-line muted">Search a company to load data</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Related News</div>
+      <div id="newsBody" class="panel-body">
+        <div class="log-line muted">Search a company to load news</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="log-panel fade-up delay-3">
+    <div class="log-header">
+      <span>session.log</span>
+      <span class="live-dot">● LIVE</span>
+    </div>
+    <div id="logBody" class="log-body">
+      <div class="log-line muted">Awaiting first request...</div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
