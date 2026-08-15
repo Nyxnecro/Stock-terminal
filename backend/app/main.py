@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.data_fetch import get_stock_data, get_company_info, get_stock_news, search_ticker
 from app.features import add_features
@@ -19,23 +19,32 @@ def root():
 
 @app.get("/stock/{ticker}")
 def stock_data(ticker: str):
-    df = get_stock_data(ticker)
-    return df.reset_index().to_dict(orient="records")
+    try:
+        df = get_stock_data(ticker)
+        return df.reset_index().to_dict(orient="records")
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 @app.get("/stock/{ticker}/features")
 def stock_features(ticker: str):
-    df = get_stock_data(ticker, period="6mo")
-    df = add_features(df)
-    df = df.dropna()
-    return df.reset_index().to_dict(orient="records")
+    try:
+        df = get_stock_data(ticker, period="6mo")
+        df = add_features(df)
+        df = df.dropna()
+        return df.reset_index().to_dict(orient="records")
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 @app.get("/stock/{ticker}/predict")
 def stock_predict(ticker: str):
-    df = get_stock_data(ticker, period="6mo")
-    df = add_features(df)
-    df = df.dropna()
-    result = train_baseline(df)
-    return result
+    try:
+        df = get_stock_data(ticker, period="6mo")
+        df = add_features(df)
+        df = df.dropna()
+        result = train_baseline(df)
+        return result
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 @app.get("/stock/{ticker}/info")
 def stock_info(ticker: str):
@@ -44,6 +53,7 @@ def stock_info(ticker: str):
 @app.get("/stock/{ticker}/news")
 def stock_news(ticker: str):
     return get_stock_news(ticker)
+
 @app.get("/search/{query}")
 def search(query: str):
-    return search_ticker(query)
+    return search_ticker(query))

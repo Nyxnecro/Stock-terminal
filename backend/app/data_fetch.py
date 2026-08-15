@@ -3,13 +3,15 @@ import yfinance as yf
 def get_stock_data(ticker: str, period: str = "1mo", interval: str = "1d"):
     """
     Fetch historical stock data.
-    ticker: e.g. "AAPL", "TCS.NS", "RELIANCE.NS"
-    period: how far back (1d, 5d, 1mo, 6mo, 1y, 5y, max)
-    interval: candle size (1m, 5m, 1h, 1d, 1wk)
     """
-    stock = yf.Ticker(ticker)
-    data = stock.history(period=period, interval=interval)
-    return data
+    try:
+        stock = yf.Ticker(ticker)
+        data = stock.history(period=period, interval=interval)
+        if data.empty:
+            raise ValueError("No data returned")
+        return data
+    except Exception as e:
+        raise RuntimeError(f"Unable to fetch data for {ticker}: {str(e)}")
 def get_company_info(ticker: str):
     """
     Fetch company fundamentals: market cap, PE ratio, sector, etc.
