@@ -271,3 +271,10 @@ button:hover {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+.chart-panel {
+  margin: 40px;
+  max-width: 900px;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  overflow: hidden;
+}

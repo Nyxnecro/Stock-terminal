@@ -59,6 +59,7 @@ async function handleSearch() {
 
 async function loadStock(ticker) {
   try {
+       loadChart(ticker);
     const [predictRes, infoRes, newsRes] = await Promise.all([
       fetch(`${API_BASE}/stock/${ticker}/predict`),
       fetch(`${API_BASE}/stock/${ticker}/info`),
@@ -126,4 +127,36 @@ function formatLargeNumber(num) {
   if (num >= 1e7) return (num / 1e7).toFixed(2) + "Cr";
   if (num >= 1e5) return (num / 1e5).toFixed(2) + "L";
   return num.toString();
+}
+function loadChart(ticker) {
+  const container = document.getElementById("tvChartContainer");
+  container.innerHTML = ""; // clear previous widget
+
+  const symbol = ticker.replace(".NS", "").replace(".BO", "");
+  const exchange = ticker.endsWith(".BO") ? "BSE" : "NSE";
+
+  const script = document.createElement("script");
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    autosize: true,
+    symbol: `${exchange}:${symbol}`,
+    interval: "D",
+    timezone: "Asia/Kolkata",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    backgroundColor: "#0a0a0a",
+    gridColor: "rgba(38, 38, 38, 0.5)",
+    hide_top_toolbar: false,
+    allow_symbol_change: false,
+    support_host: "https://www.tradingview.com"
+  });
+
+  const widgetDiv = document.createElement("div");
+  widgetDiv.className = "tradingview-widget-container";
+  widgetDiv.style.height = "100%";
+  widgetDiv.appendChild(script);
+
+  container.appendChild(widgetDiv);
 }
