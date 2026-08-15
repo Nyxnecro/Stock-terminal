@@ -1,4 +1,4 @@
-const API_BASE = "https://stock-terminal-backend.onrender.com";
+const API_BASE = "https://stock-terminal-371c.onrender.com";
 
 document.getElementById("fetchBtn").addEventListener("click", handleSearch);
 document.getElementById("ticker").addEventListener("keydown", (e) => {
