@@ -14,42 +14,43 @@ def get_company_info(ticker: str):
     """
     Fetch company fundamentals: market cap, PE ratio, sector, etc.
     """
-    stock = yf.Ticker(ticker)
-    info = stock.info
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
 
-    return {
-        "name": info.get("longName"),
-        "sector": info.get("sector"),
-        "industry": info.get("industry"),
-        "market_cap": info.get("marketCap"),
-        "pe_ratio": info.get("trailingPE"),
-        "eps": info.get("trailingEps"),
-        "52_week_high": info.get("fiftyTwoWeekHigh"),
-        "52_week_low": info.get("fiftyTwoWeekLow"),
-        "dividend_yield": info.get("dividendYield"),
-        "current_price": info.get("currentPrice"),
-        "currency": info.get("currency"),
-    }
-
+        return {
+            "name": info.get("longName"),
+            "sector": info.get("sector"),
+            "industry": info.get("industry"),
+            "market_cap": info.get("marketCap"),
+            "pe_ratio": info.get("trailingPE"),
+            "eps": info.get("trailingEps"),
+            "52_week_high": info.get("fiftyTwoWeekHigh"),
+            "52_week_low": info.get("fiftyTwoWeekLow"),
+            "dividend_yield": info.get("dividendYield"),
+            "current_price": info.get("currentPrice"),
+            "currency": info.get("currency"),
+        }
+    except Exception as e:
+        return {"error": "Data temporarily unavailable (rate limited). Please try again shortly."}
 
 def get_stock_news(ticker: str, limit: int = 5):
-    """
-    Fetch recent news headlines related to the ticker.
-    """
-    stock = yf.Ticker(ticker)
-    news_items = stock.news[:limit]
+    try:
+        stock = yf.Ticker(ticker)
+        news_items = stock.news[:limit]
 
-    results = []
-    for item in news_items:
-        content = item.get("content", item)
-        results.append({
-            "title": content.get("title"),
-            "publisher": content.get("provider", {}).get("displayName") if isinstance(content.get("provider"), dict) else content.get("publisher"),
-            "link": content.get("canonicalUrl", {}).get("url") if isinstance(content.get("canonicalUrl"), dict) else content.get("link"),
-            "published": content.get("pubDate", content.get("providerPublishTime")),
-        })
-    return results
-import requests
+        results = []
+        for item in news_items:
+            content = item.get("content", item)
+            results.append({
+                "title": content.get("title"),
+                "publisher": content.get("provider", {}).get("displayName") if isinstance(content.get("provider"), dict) else content.get("publisher"),
+                "link": content.get("canonicalUrl", {}).get("url") if isinstance(content.get("canonicalUrl"), dict) else content.get("link"),
+                "published": content.get("pubDate", content.get("providerPublishTime")),
+            })
+        return results
+    except Exception:
+        return []
 
 def search_ticker(query: str, limit: int = 5):
     """
