@@ -57,6 +57,7 @@ async function handleSearch() {
 
 async function loadStock(ticker) {
   try {
+    console.log("Calling loadChart with ticker:", ticker);
     loadChart(ticker);
 
     const [predictRes, infoRes, newsRes] = await Promise.all([
