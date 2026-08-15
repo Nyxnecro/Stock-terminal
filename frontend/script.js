@@ -126,41 +126,42 @@ function formatLargeNumber(num) {
   return num.toString();
 }
 
-function loadChart(ticker) {
-  const container = document.getElementById("tvChartContainer");
-  container.innerHTML = "";
+let chart = null;
+let candleSeries = null;
 
-  const symbol = ticker.replace(".NS", "").replace(".BO", "");
-  const exchange = ticker.endsWith(".BO") ? "BSE" : "NSE";
+async function loadChart(ticker) {
+  try {
+    const res = await fetch(`${API_BASE}/stock/${ticker}/chart`);
+    const data = await res.json();
 
-  const widgetContainer = document.createElement("div");
-  widgetContainer.className = "tradingview-widget-container";
-  widgetContainer.style.height = "100%";
+    if (!data.length) {
+      addLog(`No chart data available for ${ticker}`);
+      return;
+    }
 
-  const widgetInner = document.createElement("div");
-  widgetInner.className = "tradingview-widget-container__widget";
-  widgetInner.style.height = "100%";
+    const container = document.getElementById("tvChartContainer");
+    container.innerHTML = "";
 
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-  script.async = true;
- script.textContent = JSON.stringify({
-    autosize: true,
-    symbol: `${exchange}:${symbol}`,
-    interval: "D",
-    timezone: "Asia/Kolkata",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    backgroundColor: "#0a0a0a",
-    gridColor: "rgba(38, 38, 38, 0.5)",
-    hide_top_toolbar: false,
-    allow_symbol_change: false,
-    support_host: "https://www.tradingview.com"
-  });
+    chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 350,
+      layout: { background: { color: "#0a0a0a" }, textColor: "#a3a3a3" },
+      grid: { vertLines: { color: "#1a1a1a" }, horzLines: { color: "#1a1a1a" } },
+      timeScale: { borderColor: "#262626" },
+      rightPriceScale: { borderColor: "#262626" },
+    });
 
-  widgetContainer.appendChild(widgetInner);
-  widgetContainer.appendChild(script);
-  container.appendChild(widgetContainer);
+    candleSeries = chart.addCandlestickSeries({
+      upColor: "#22c55e",
+      downColor: "#ef4444",
+      borderVisible: false,
+      wickUpColor: "#22c55e",
+      wickDownColor: "#ef4444",
+    });
+
+    candleSeries.setData(data);
+    chart.timeScale().fitContent();
+  } catch (err) {
+    addLog(`ERROR loading chart for ${ticker}`);
+  }
 }
