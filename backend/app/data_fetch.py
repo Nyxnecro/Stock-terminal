@@ -56,21 +56,24 @@ def search_ticker(query: str, limit: int = 5):
     """
     Search for a ticker by company name, prioritizing NSE/BSE listings.
     """
-    url = "https://query2.finance.yahoo.com/v1/finance/search"
-    params = {"q": query, "quotesCount": limit, "newsCount": 0}
-    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        url = "https://query2.finance.yahoo.com/v1/finance/search"
+        params = {"q": query, "quotesCount": limit, "newsCount": 0}
+        headers = {"User-Agent": "Mozilla/5.0"}
 
-    response = requests.get(url, params=params, headers=headers)
-    data = response.json()
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        data = response.json()
 
-    results = []
-    for quote in data.get("quotes", []):
-        symbol = quote.get("symbol", "")
-        if symbol.endswith(".NS") or symbol.endswith(".BO"):
-            results.append({
-                "symbol": symbol,
-                "name": quote.get("longname") or quote.get("shortname"),
-                "exchange": quote.get("exchange"),
-            })
+        results = []
+        for quote in data.get("quotes", []):
+            symbol = quote.get("symbol", "")
+            if symbol.endswith(".NS") or symbol.endswith(".BO"):
+                results.append({
+                    "symbol": symbol,
+                    "name": quote.get("longname") or quote.get("shortname"),
+                    "exchange": quote.get("exchange"),
+                })
 
-    return results
+        return results
+    except Exception:
+        return []
