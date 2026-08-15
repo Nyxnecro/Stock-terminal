@@ -1,10 +1,13 @@
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.data_fetch import get_stock_data, get_company_info, get_stock_news, search_ticker
 from app.features import add_features
 from app.models.baseline import train_baseline
+from app.database import init_db
 
 app = FastAPI()
+init_db()
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,6 @@
 import yfinance as yf
+import requests
+from app.database import init_db, cache_analysis, get_cached_analysis
 
 def get_stock_data(ticker: str, period: str = "1mo", interval: str = "1d"):
     """
@@ -57,7 +59,13 @@ def get_stock_news(ticker: str, limit: int = 5):
 def search_ticker(query: str, limit: int = 5):
     """
     Search for a ticker by company name, prioritizing NSE/BSE listings.
+    Uses cache to avoid repeated Yahoo Finance calls.
     """
+    cache_key = f"search_{query.lower()}"
+    cached = get_cached_analysis(cache_key)
+    if cached is not None:
+        return cached
+
     try:
         url = "https://query2.finance.yahoo.com/v1/finance/search"
         params = {"q": query, "quotesCount": limit, "newsCount": 0}
@@ -75,6 +83,9 @@ def search_ticker(query: str, limit: int = 5):
                     "name": quote.get("longname") or quote.get("shortname"),
                     "exchange": quote.get("exchange"),
                 })
+
+        if results:
+            cache_analysis(cache_key, results)
 
         return results
     except Exception:
