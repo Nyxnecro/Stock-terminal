@@ -38,7 +38,6 @@ async function handleSearch() {
   addLog(`Searching for "${query}"...`);
 
   try {
-    // Step 1: resolve company name -> ticker
     const searchRes = await fetch(`${API_BASE}/search/${encodeURIComponent(query)}`);
     const matches = await searchRes.json();
 
@@ -47,7 +46,6 @@ async function handleSearch() {
       return;
     }
 
-    // Prefer NSE if available
     const match = matches.find(m => m.symbol.endsWith(".NS")) || matches[0];
     addLog(`Resolved to ${match.symbol} (${match.name})`);
 
@@ -59,7 +57,8 @@ async function handleSearch() {
 
 async function loadStock(ticker) {
   try {
-       loadChart(ticker);
+    loadChart(ticker);
+
     const [predictRes, infoRes, newsRes] = await Promise.all([
       fetch(`${API_BASE}/stock/${ticker}/predict`),
       fetch(`${API_BASE}/stock/${ticker}/info`),
@@ -70,7 +69,6 @@ async function loadStock(ticker) {
     const info = await infoRes.json();
     const news = await newsRes.json();
 
-    // Update stats
     const diff = predict.next_day_prediction - predict.last_close;
     const trendClass = diff >= 0 ? "up" : "down";
     const trendSymbol = diff >= 0 ? "▲ UP" : "▼ DOWN";
@@ -83,12 +81,10 @@ async function loadStock(ticker) {
     trendEl.textContent = trendSymbol;
     trendEl.className = `stat-value ${trendClass}`;
 
-// Update company info panel
     const infoBody = document.getElementById("infoBody");
     if (info.error) {
       infoBody.innerHTML = `<div class="log-line muted">${info.error}</div>`;
-    } else 
-      {
+    } else {
       infoBody.innerHTML = `
         <div class="info-row"><span class="label">Company</span><span>${info.name || "-"}</span></div>
         <div class="info-row"><span class="label">Sector</span><span>${info.sector || "-"}</span></div>
@@ -101,7 +97,7 @@ async function loadStock(ticker) {
         <div class="info-row"><span class="label">Dividend Yield</span><span>${info.dividend_yield ?? "-"}%</span></div>
       `;
     }
-    // Update news panel
+
     const newsBody = document.getElementById("newsBody");
     if (news.length) {
       newsBody.innerHTML = news.map(item => `
@@ -128,14 +124,24 @@ function formatLargeNumber(num) {
   if (num >= 1e5) return (num / 1e5).toFixed(2) + "L";
   return num.toString();
 }
+
 function loadChart(ticker) {
   const container = document.getElementById("tvChartContainer");
-  container.innerHTML = ""; // clear previous widget
+  container.innerHTML = "";
 
   const symbol = ticker.replace(".NS", "").replace(".BO", "");
   const exchange = ticker.endsWith(".BO") ? "BSE" : "NSE";
 
+  const widgetContainer = document.createElement("div");
+  widgetContainer.className = "tradingview-widget-container";
+  widgetContainer.style.height = "100%";
+
+  const widgetInner = document.createElement("div");
+  widgetInner.className = "tradingview-widget-container__widget";
+  widgetInner.style.height = "100%";
+
   const script = document.createElement("script");
+  script.type = "text/javascript";
   script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
   script.async = true;
   script.innerHTML = JSON.stringify({
@@ -153,10 +159,7 @@ function loadChart(ticker) {
     support_host: "https://www.tradingview.com"
   });
 
-  const widgetDiv = document.createElement("div");
-  widgetDiv.className = "tradingview-widget-container";
-  widgetDiv.style.height = "100%";
-  widgetDiv.appendChild(script);
-
-  container.appendChild(widgetDiv);
+  widgetContainer.appendChild(widgetInner);
+  widgetContainer.appendChild(script);
+  container.appendChild(widgetContainer);
 }
