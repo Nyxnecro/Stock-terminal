@@ -144,7 +144,7 @@ function loadChart(ticker) {
   script.type = "text/javascript";
   script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
   script.async = true;
-  script.innerHTML = JSON.stringify({
+ script.textContent = JSON.stringify({
     autosize: true,
     symbol: `${exchange}:${symbol}`,
     interval: "D",
