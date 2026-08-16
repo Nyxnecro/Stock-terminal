@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from typing import List, Dict
 
-def get_ohlc_data(ticker: str, period: str = "1y", interval: str = "1d") -> List[Dict]:
+def get_ohlc_data(ticker: str, period: str = "5y", interval: str = "1d") -> List[Dict]:
     """
     Fetch OHLC (Open, High, Low, Close) data for charting
     Returns data in format compatible with TradingView Lightweight Charts
