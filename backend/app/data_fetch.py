@@ -29,36 +29,51 @@ def get_stock_data(ticker: str, period: str = "1mo", interval: str = "1d"):
     except Exception as e:
         raise RuntimeError(f"Unable to fetch data for {ticker}: {str(e)}")
 
-
 def get_company_info(ticker: str):
+    """
+    Fetch company fundamentals. Uses fast_info first (lighter, less rate-limited),
+    falls back to full info only if needed. Cached for 30 minutes.
+    """
     cache_key = f"info_{ticker}"
-    cached = get_cached_analysis(cache_key, max_age_minutes=15)
+    cached = get_cached_analysis(cache_key, max_age_minutes=30)
     if cached is not None:
         return cached
 
     try:
         stock = yf.Ticker(ticker)
-        info = stock.info
+        fast = stock.fast_info
 
         result = {
-            "name": info.get("longName"),
-            "sector": info.get("sector"),
-            "industry": info.get("industry"),
-            "market_cap": info.get("marketCap"),
-            "pe_ratio": info.get("trailingPE"),
-            "eps": info.get("trailingEps"),
-            "52_week_high": info.get("fiftyTwoWeekHigh"),
-            "52_week_low": info.get("fiftyTwoWeekLow"),
-            "dividend_yield": info.get("dividendYield"),
-            "current_price": info.get("currentPrice"),
-            "currency": info.get("currency"),
+            "name": None,
+            "sector": None,
+            "industry": None,
+            "market_cap": fast.get("market_cap") if fast else None,
+            "pe_ratio": None,
+            "eps": None,
+            "52_week_high": fast.get("year_high") if fast else None,
+            "52_week_low": fast.get("year_low") if fast else None,
+            "dividend_yield": None,
+            "current_price": fast.get("last_price") if fast else None,
+            "currency": fast.get("currency") if fast else None,
         }
+
+        # Try to enrich with full info (name, sector, PE) but don't fail if this part is blocked
+        try:
+            info = stock.info
+            result["name"] = info.get("longName")
+            result["sector"] = info.get("sector")
+            result["industry"] = info.get("industry")
+            result["pe_ratio"] = info.get("trailingPE")
+            result["eps"] = info.get("trailingEps")
+            result["dividend_yield"] = info.get("dividendYield")
+        except Exception:
+            pass  # fast_info data is still useful even without this
 
         cache_analysis(cache_key, result)
         return result
     except Exception:
         error_result = {"error": "Data temporarily unavailable (rate limited). Please try again shortly."}
-        cache_analysis(cache_key, error_result)  # cache the failure briefly too
+        cache_analysis(cache_key, error_result)
         return error_result
 
 def get_stock_news(ticker: str, limit: int = 5):
