@@ -32,12 +32,18 @@ def get_stock_data(ticker: str, period: str = "1mo", interval: str = "1d"):
 def get_company_info(ticker: str):
     """
     Fetch company fundamentals. Uses fast_info first (lighter, less rate-limited),
-    falls back to full info only if needed. Cached for 30 minutes.
+    falls back to full info only if needed.
+    Successes cached 30 min, failures cached only 1 min (so it retries sooner).
     """
     cache_key = f"info_{ticker}"
     cached = get_cached_analysis(cache_key, max_age_minutes=30)
-    if cached is not None:
+    if cached is not None and "error" not in cached:
         return cached
+
+    error_cache_key = f"info_error_{ticker}"
+    recent_error = get_cached_analysis(error_cache_key, max_age_minutes=1)
+    if recent_error is not None:
+        return recent_error
 
     try:
         stock = yf.Ticker(ticker)
@@ -57,7 +63,6 @@ def get_company_info(ticker: str):
             "currency": fast.get("currency") if fast else None,
         }
 
-        # Try to enrich with full info (name, sector, PE) but don't fail if this part is blocked
         try:
             info = stock.info
             result["name"] = info.get("longName")
@@ -67,13 +72,13 @@ def get_company_info(ticker: str):
             result["eps"] = info.get("trailingEps")
             result["dividend_yield"] = info.get("dividendYield")
         except Exception:
-            pass  # fast_info data is still useful even without this
+            pass
 
         cache_analysis(cache_key, result)
         return result
     except Exception:
         error_result = {"error": "Data temporarily unavailable (rate limited). Please try again shortly."}
-        cache_analysis(cache_key, error_result)
+        cache_analysis(error_cache_key, error_result)
         return error_result
 
 def get_stock_news(ticker: str, limit: int = 5):
