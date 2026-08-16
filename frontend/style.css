@@ -263,6 +263,12 @@ button:hover {
   font-size: 12px;
   line-height: 1.4;
 }
+.news-summary {
+  color: #a3a3a3;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
 
 .news-meta {
   color: #525252;

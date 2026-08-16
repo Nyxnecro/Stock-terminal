@@ -94,8 +94,14 @@ def get_stock_news(ticker: str, limit: int = 5):
         results = []
         for item in news_items:
             content = item.get("content", item)
+            summary = content.get("summary") or content.get("description") or ""
+            # Trim summary to a clean length
+            if len(summary) > 180:
+                summary = summary[:180].rsplit(" ", 1)[0] + "..."
+
             results.append({
                 "title": content.get("title"),
+                "summary": summary,
                 "publisher": content.get("provider", {}).get("displayName") if isinstance(content.get("provider"), dict) else content.get("publisher"),
                 "link": content.get("canonicalUrl", {}).get("url") if isinstance(content.get("canonicalUrl"), dict) else content.get("link"),
                 "published": content.get("pubDate", content.get("providerPublishTime")),
@@ -105,7 +111,6 @@ def get_stock_news(ticker: str, limit: int = 5):
         return results
     except Exception:
         return []
-
 
 def get_chart_data(ticker: str, period: str = "6mo"):
     """

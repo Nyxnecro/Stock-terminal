@@ -99,18 +99,18 @@ async function loadStock(ticker) {
       `;
     }
 
-    const newsBody = document.getElementById("newsBody");
+  const newsBody = document.getElementById("newsBody");
     if (news.length) {
       newsBody.innerHTML = news.map(item => `
         <a class="news-item" href="${item.link}" target="_blank">
           <div class="news-title">${item.title || "Untitled"}</div>
+          ${item.summary ? `<div class="news-summary">${item.summary}</div>` : ""}
           <div class="news-meta">${item.publisher || "Unknown source"}</div>
         </a>
       `).join("");
     } else {
       newsBody.innerHTML = `<div class="log-line muted">No recent news found</div>`;
     }
-
     addLog(`Loaded ${ticker} — predicted ₹${predict.next_day_prediction.toFixed(2)} (MAE ₹${predict.mae.toFixed(2)})`);
   } catch (err) {
     addLog(`ERROR loading ${ticker} data`);

@@ -4,9 +4,11 @@ from app.data_fetch import get_stock_data, get_company_info, get_stock_news, sea
 from app.features import add_features
 from app.models.baseline import train_baseline
 from app.database import init_db
-
+from app.nse_tickers import load_nse_companies
+from app.models.lstm_model import train_lstm
 app = FastAPI()
 init_db()
+load_nse_companies()
 
 app.add_middleware(
     CORSMiddleware,
@@ -65,3 +67,15 @@ def stock_chart(ticker: str):
 @app.get("/search/{query}")
 def search(query: str):
     return search_ticker(query)
+@app.get("/stock/{ticker}/predict/lstm")
+def stock_predict_lstm(ticker: str):
+    try:
+        df = get_stock_data(ticker, period="5y")
+        df = add_features(df)
+        df = df.dropna()
+        if df.empty or len(df) < 30:
+            raise ValueError("Not enough historical data for LSTM training")
+        result = train_lstm(df)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
